@@ -288,7 +288,7 @@
 		</script>
 		
 		<script type="text/javascript">
-			//**************************************************************************
+			/*
 			var Movie = Backbone.Model.extend({});
 
 			var Movies = Backbone.Collection.extend({
@@ -308,6 +308,72 @@
 					return this;	//	No lo necesitamos en este ejemplo, pero es una buena practica. Sirve para hacer "chaining"
 				},
 				//	En este metodo, la vista hija es creada y agregada a la vista padre
+				processMovie: function(movie){
+					var childMovieItemView = new MovieItemView({ model: movie });
+					childMovieItemView.render();
+					this.$el.append(childMovieItemView.el);
+				}
+			})
+
+			var MovieItemView = Backbone.View.extend({
+				type: "MovieItemView", //for debugging
+				template: _.template($("#template-movieItem").html()),
+				tagName: "div",
+				className: "tableRow",
+				//el: since we're setting the tagName, we don't need set the el
+				//model: pass model in
+				initialize: function () {
+					this.model.on("change", this.modelChanged, this);
+				},
+				events: {
+					"click": "viewClicked"
+				},
+				render: function () {
+					var outputHtml = this.template(this.model.toJSON());
+					this.$el.html(outputHtml);
+					return this;
+				},
+				modelChanged: function (model, changes) {
+					console.log("modelChanged:" + model.get("title"));
+					this.render();
+				},
+				viewClicked: function (event) {
+					console.log("viewClicked: " + this.model.get("title"));
+				}
+			})
+
+			//**************************************************************************
+			var myMovies = [
+				{ "id": "1", "title": "Bag It", "releaseYear": 2010 },
+				{ "id": "2", "title": "Lost Boy: The Next Chapter", "releaseYear": 2009 },
+				{ "id": "3", "title": "To Live & Ride in L.A.", "releaseYear": 2010 },
+				{ "id": "4", "title": "K-ON!: Vol. 1", "releaseYear": 2009 },
+				{ "id": "5", "title": "Archer: Season 2: Disc 1", "releaseYear": 2011 },
+			];
+			var movies = new Movies(myMovies)
+			var movieListView = new MovieListView({ collection: movies });
+			movieListView.render();
+			/**/
+		</script>
+		
+		<script type="text/javascript">
+			var Movie = Backbone.Model.extend({});
+			var Movies = Backbone.Collection.extend({
+				model: Movie
+			});
+
+			//**************************************************************************
+			var MovieListView = Backbone.View.extend({
+				type: "MovieListView", //for debugging
+				el: "#container-movieList",  //the view should be decoupled from the DOM, but for this example this will do.
+				//collection:  This will be passed in during initialization
+				initialize: function () {
+
+				},
+				render: function () {
+					_.each(this.collection.models, this.processMovie, this);
+					return this;
+				},
 				processMovie: function(movie){
 					var childMovieItemView = new MovieItemView({ model: movie });
 					childMovieItemView.render();
